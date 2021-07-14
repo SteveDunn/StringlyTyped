@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
+    <nullable>enable</nullable>
+
+    <Features>strict</Features>
+    <PackageId>StringlyTyped.ValueObjects</PackageId>
+    <Version>1.0.0</Version>
+    <PackageVersion>1.0.0</PackageVersion>
+    <PackageProjectUrl>https://github.com/SteveDunn/StringlyTyped</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/SteveDunn/StringlyTyped/blob/main/LICENSE</PackageLicenseUrl>
+
+    <Authors>Steve Dunn</Authors>
+    <Copyright>Copyright Steve Dunn</Copyright>
+    <Title>StringlyTyped - Value Objects that help combat 'Stringly Typed' software and Primitive Obsession.  Be confident with your types!</Title>
+    <PackageTags>stringlytyped;primitive;obsession;valuetype;valuetypes;valueobj;valueobjects</PackageTags>
+    <PackageIcon>gradient_128x128.png</PackageIcon>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\assets\logo\gradient_128x128.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="MinVer" Version="2.3.1" PrivateAssets="All" />
+    <PackageReference Include="System.Text.Json" Version="5.0.2" />
+  </ItemGroup>
+
+
+</Project>

@@ -1,0 +1,260 @@
+﻿// ReSharper disable EqualExpressionComparison
+// ReSharper disable SuspiciousTypeConversion.Global
+// ReSharper disable RedundantNameQualifier
+// ReSharper disable ConditionIsAlwaysTrueOrFalse
+// ReSharper disable RedundantCast
+// ReSharper disable StringLiteralTypo
+// ReSharper disable PossibleNullReferenceException
+#pragma warning disable 252,253
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.Json;
+using FluentAssertions;
+using Xunit;
+
+namespace StringlyTyped.SmallTests
+{
+    public class ValueObjectTests
+    {
+        [Fact]
+        public void equality_between_same_value_objects()
+        {
+            Age.From(18).Equals(Age.From(18)).Should().BeTrue();
+            (Age.From(18) == Age.From(18)).Should().BeTrue();
+
+            (Age.From(18) != Age.From(19)).Should().BeTrue();
+            (Age.From(18) == Age.From(19)).Should().BeFalse();
+
+            Age.From(18).Equals(Age.From(18)).Should().BeTrue();
+            (Age.From(18) == Age.From(18)).Should().BeTrue();
+        }
+
+        [Fact]
+        public void equality_between_different_value_objects()
+        {
+            Age.From(18).Equals(Score.From(18)).Should().BeFalse();
+            (Age.From(18) == (object)Score.From(18)).Should().BeFalse();
+        }
+
+        [Fact]
+        public void equality_with_primitives()
+        {
+            Age.From(18).Equals(-1).Should().BeFalse();
+            (Age.From(18) == 18).Should().BeTrue();
+            (18 == Age.From(18)).Should().BeTrue();
+            Age.From(18).Equals(18).Should().BeTrue();
+
+            (Age.From(18) != Age.From(19)).Should().BeTrue();
+            (Age.From(18) != 2).Should().BeTrue();
+            (Age.From(18) == 2).Should().BeFalse();
+            Age.From(18).Equals(Age.From(19)).Should().BeFalse();
+
+            Age.From(18).Equals(new StackFrame()).Should().BeFalse();
+            
+            Age.From(18).Equals(Score.From(1)).Should().BeFalse();
+        }
+
+        [Fact]
+        public void reference_equality()
+        {
+            var age1 = Age.From(18);
+            var age2 = Age.From(18);
+
+            age1.Equals(age1).Should().BeTrue();
+
+            object.ReferenceEquals(age1, age2).Should().BeFalse();
+        }
+
+        [Fact]
+        public void equality_with_object()
+        {
+            var age = Age.From(18);
+            age.Equals((object)age).Should().BeTrue();
+            
+            age.Equals((object)"???").Should().BeFalse();
+
+            (age == (object) "??").Should().BeFalse();
+            (age != (object) "??").Should().BeTrue();
+        }
+
+        [Fact]
+        public void validation()
+        {
+            Func<Age> act = () => Age.From(12);
+            act.Should().ThrowExactly<ValueObjectValidationException>();
+
+            Func<EightiesDate> act2 = () => EightiesDate.From(new DateTime(1990, 1,1));
+            act2.Should().ThrowExactly<ValueObjectValidationException>();
+
+            Func<EightiesDate> act3 = () => EightiesDate.From(new DateTime(1985, 6,10));
+            act3.Should().NotThrow();
+
+            string[] validDaves = new[] { "dave grohl", "david beckham", "david bowie" };
+            foreach (var name in validDaves)
+            {
+                Func<Dave> act4 = () => Dave.From(name);
+                act4.Should().NotThrow();
+            }
+
+            string[] invalidDaves = new[] { "dafid jones", "fred flintstone", "davidoff cool water" };
+            foreach (var name in invalidDaves)
+            {
+                Func<Dave> act5 = () => Dave.From(name);
+                act5.Should().ThrowExactly<ValueObjectValidationException>();
+            }
+        }
+
+        [Fact]
+        public void no_validation()
+        {
+            Func<Anything> act = () => Anything.From(int.MaxValue);
+            act.Should().NotThrow();
+        }
+
+        [Fact]
+        public void nullness()
+        {
+            (Age.From(50) == null).Should().BeFalse();
+            Age.From(50).Equals(null).Should().BeFalse();
+
+            (Age.From(50) != null).Should().BeTrue();
+
+            Func<Daves> act = () => Daves.From(null);
+            act.Should().ThrowExactly<ValueObjectValidationException>();
+        }
+
+        [Fact]
+        public void collections_are_unsupported()
+        {
+            Func<Daves> act = () => Daves.From(new List<Dave>
+            {
+                Dave.From("david bowie")
+            });
+
+            act.Should().ThrowExactly<NotSupportedException>();
+        }
+
+        [Fact]
+        public void hashing()
+        {
+            (Age.From(18).GetHashCode() == Age.From(18).GetHashCode()).Should().BeTrue();
+            (Age.From(18).GetHashCode() == Age.From(19).GetHashCode()).Should().BeFalse();
+            (Age.From(18).GetHashCode() == Score.From(1).GetHashCode()).Should().BeFalse();
+            (Age.From(18).GetHashCode() == Score.From(18).GetHashCode()).Should().BeFalse();
+        }
+        
+        [Fact]
+        public void to_string()
+        {
+            Age.From(18).ToString().Should().Be("18");
+            Age.From(100).ToString().Should().Be("100");
+            Age.From(1_000).ToString().Should().Be("1000");
+        }
+
+        [Fact]
+        public void storing_1()
+        {
+            var a1 = Age.From(18);
+            var a2 = Age.From(50);
+            
+            var d = new Dictionary<Age, string>
+            {
+                { a1, "hello1" },
+                { a2, "hello2" }
+            };
+
+            d.Count.Should().Be(2);
+            
+            d[a1].Should().Be("hello1");
+            d[a2].Should().Be("hello2");
+        }
+
+        [Fact]
+        public void storing_2()
+        {
+            var a1 = Age.From(18);
+            var a2 = Age.From(18);
+            
+            var d = new Dictionary<Age, string> { { a1, "hello1" } };
+            
+            d[a2] = "hello2";
+            
+            d.Count.Should().Be(1);
+            
+            d[a1].Should().Be("hello2");
+        }
+
+        [Fact]
+        public void serialising()
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                Converters = { new ValueObjectConverterFactory() }
+            };
+
+            Age age1 = Age.From(18);
+            string ageAsJson = JsonSerializer.Serialize(age1, options);
+
+            Age age2 = JsonSerializer.Deserialize<Age>(ageAsJson, options);
+            age2.Value.Should().Be(18);
+
+            Score score1 = Score.From(18);
+            string scoreAsJson = JsonSerializer.Serialize(score1, options);
+            Score score2 = JsonSerializer.Deserialize<Score>(scoreAsJson, options);
+            score1.Equals(score2).Should().BeTrue();
+
+            (age1 == age2).Should().BeTrue();
+            age1.Equals(age2).Should().BeTrue();
+
+            List<Dave> daves = new(new List<Dave>
+            {
+                Dave.From("david bowie"),
+                Dave.From("david beckham"),
+                Dave.From("dave grohl")
+            });
+
+            string davesAsText = JsonSerializer.Serialize(daves, options);
+
+            var newDaves = JsonSerializer.Deserialize<List<Dave>>(davesAsText, options);
+
+            object.ReferenceEquals(daves, newDaves).Should().BeFalse();
+
+            newDaves.Count.Should().Be(daves.Count);
+            newDaves.Should().ContainInOrder(daves);
+        }
+
+        [Fact]
+        public void serialising_from_same_json()
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                Converters = { new ValueObjectConverterFactory() }
+            };
+
+            const string json = "18";
+
+            Age d_age = JsonSerializer.Deserialize<Age>(json, options);
+            Score d_score = JsonSerializer.Deserialize<Score>(json, options);
+
+            d_age.Value.Should().Be(18);
+            d_score.Value.Should().Be(18);
+            
+            object.ReferenceEquals(d_age, d_score).Should().BeFalse();
+        }
+
+        [Fact]
+        public void serialising_from_now_invalid_value()
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                Converters = { new ValueObjectConverterFactory() }
+            };
+
+            Func<Age> act = () => JsonSerializer.Deserialize<Age>("4", options);
+
+            act.Should().Throw<ValueObjectValidationException>();//.WithMessage("Must be 18 or over");
+        }
+    }
+}
