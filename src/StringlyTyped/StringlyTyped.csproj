@@ -9,12 +9,11 @@
     <Version>1.0.0</Version>
     <PackageVersion>1.0.0</PackageVersion>
     <PackageProjectUrl>https://github.com/SteveDunn/StringlyTyped</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/SteveDunn/StringlyTyped/blob/main/LICENSE</PackageLicenseUrl>
 
     <Authors>Steve Dunn</Authors>
     <Copyright>Copyright Steve Dunn</Copyright>
     <Title>StringlyTyped - Value Objects that help combat 'Stringly Typed' software and Primitive Obsession.  Be confident with your types!</Title>
-    <PackageTags>stringlytyped;primitive;obsession;valuetype;valuetypes;valueobj;valueobjects</PackageTags>
+    <PackageTags>stringlytyped;primitive;obsession;valuetype;valuetypes;valueobj;valueobjects;ddd</PackageTags>
     <PackageIcon>gradient_128x128.png</PackageIcon>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -22,8 +21,8 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <Deterministic>true</Deterministic>
-    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RepositoryUrl>https://github.com/SteveDunn/StringlyTyped</RepositoryUrl>
 
   </PropertyGroup>
 
