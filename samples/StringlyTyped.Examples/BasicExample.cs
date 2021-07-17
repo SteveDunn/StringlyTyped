@@ -12,23 +12,24 @@ namespace StringlyTyped.Examples
 
             new CustomerProcessor().Process(CustomerId.From(123), SupplierId.From(321), Amount.From(123));
         }
-    }
 
-    internal class CustomerId : ValueObject<int, CustomerId>
-    {
-    }
 
-    internal class SupplierId : ValueObject<int, SupplierId>
-    {
-    }
+        internal class CustomerId : ValueObject<int, CustomerId>
+        {
+        }
 
-    internal class Amount : ValueObject<int, Amount>
-    {
-    }
+        internal class SupplierId : ValueObject<int, SupplierId>
+        {
+        }
 
-    internal class CustomerProcessor
-    {
-        internal void Process(CustomerId customerId, SupplierId supplierId, Amount amount) => 
-            Console.WriteLine($"Processing customer {customerId}, supplier {supplierId}, with amount {amount}");
+        internal class Amount : ValueObject<int, Amount>
+        {
+        }
+
+        internal class CustomerProcessor
+        {
+            internal void Process(CustomerId customerId, SupplierId supplierId, Amount amount) =>
+                Console.WriteLine($"Processing customer {customerId}, supplier {supplierId}, with amount {amount}");
+        }
     }
 }

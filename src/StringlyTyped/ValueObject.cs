@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace StringlyTyped
 {
@@ -16,7 +14,7 @@ namespace StringlyTyped
     /// </summary>
     /// <typeparam name="T">The underlying primitive type, e.g. decimal, int, string</typeparam>
     /// <typeparam name="TDerived">The derived typed (your type) - required for the 'factory' From method.</typeparam>
-    public abstract class ValueObject<T, TDerived> : IEquatable<ValueObject<T, TDerived>>, IEquatable<T> 
+    public abstract class ValueObject<T, TDerived> : IEquatable<ValueObject<T, TDerived>>, IEquatable<T>
         where T : notnull
         where TDerived : ValueObject<T, TDerived>
     {
@@ -28,21 +26,49 @@ namespace StringlyTyped
 
         static ValueObject()
         {
-            ConstructorInfo ctor = typeof(TDerived)
+            var constructors = typeof(TDerived)
                 .GetTypeInfo()
-                .DeclaredConstructors
-                .Single();
+                .DeclaredConstructors.Where(c => !c.IsStatic).ToList();
 
-            var argsExp = new Expression[0];
-            NewExpression newExp = Expression.New(ctor, argsExp);
+            if (constructors.Count == 0)
+            {
+                throw new ValueObjectSetupException($"No constructors for {typeof(TDerived).Name}");
+            }
+
+            if (constructors.Count > 1)
+            {
+                throw new ValueObjectSetupException($"Multiple constructors for {typeof(TDerived).Name}");
+            }
+
+
+            ConstructorInfo ctor = constructors.Single();
+
+            NewExpression newExp = Expression.New(ctor, Array.Empty<Expression>());
             LambdaExpression lambda = Expression.Lambda(typeof(Func<TDerived>), newExp);
 
-            Factory = (Func<TDerived>)lambda.Compile();
+            Factory = (Func<TDerived>) lambda.Compile();
         }
 
-        public virtual string ValidationErrors() => string.Empty;
+        /// <summary>
+        /// Validates the value provided.  Return `Validation.Ok` if validation passes, or
+        /// `Validation.Invalid` if the data is invalid.
+        /// <example>
+        /// public override Validation Validate() =&gt; Value > 0 ? Validation.Ok : Validation.Invalid("invalid domain object");
+        /// </example>
+        /// If `Invalid` is returned, then a <see cref="ValueObjectValidationException"/> is thrown.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Validation Validate() => Validation.Ok;
 
-        public static TDerived From(T value)
+        /// <summary>
+        /// Builds an instance and allows derived classes to skip validation. Skipping validation
+        /// is useful when using a `NullObject` for a domain object representing something
+        /// that is uninitialised.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="ignoreValidation"></param>
+        /// <returns></returns>
+        protected static TDerived From(T value, bool ignoreValidation)
         {
             if (value is null)
             {
@@ -53,19 +79,26 @@ namespace StringlyTyped
             {
                 throw new NotSupportedException("Collections are not supported.");
             }
-            
-            TDerived x = Factory();
-            x.Value = value;
 
-            string errors = x.ValidationErrors();
-            
-            if (!string.IsNullOrEmpty(errors))
+            TDerived instance = Factory();
+            instance.Value = value;
+
+            Validation validation = ignoreValidation ? Validation.Ok : instance.Validate();
+
+            if (validation != Validation.Ok)
             {
-                throw new ValueObjectValidationException(errors);
+                throw new ValueObjectValidationException(validation.ErrorMessage);
             }
 
-            return x;
+            return instance;
         }
+
+        /// <summary>
+        /// Builds an instance.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>An instance which is validated if validation is provided and succeeds.</returns>
+        public static TDerived From(T value) => From(value, false);
 
         public bool Equals(ValueObject<T, TDerived>? other)
         {
@@ -123,7 +156,7 @@ namespace StringlyTyped
                 hash = (hash * 16777619) ^ GetType().GetHashCode();
                 hash = (hash * 16777619) ^ EqualityComparer<T>.Default.GetHashCode();
                 return hash;
-            }            
+            }
         }
 
         public override string? ToString() => Value.ToString();

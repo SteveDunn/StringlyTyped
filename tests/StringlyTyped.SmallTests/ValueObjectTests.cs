@@ -104,6 +104,10 @@ namespace StringlyTyped.SmallTests
                 Func<Dave> act5 = () => Dave.From(name);
                 act5.Should().ThrowExactly<ValueObjectValidationException>();
             }
+
+            Func<MinimalValidation> act6 = () => MinimalValidation.From(1);
+            act6.Should().ThrowExactly<ValueObjectValidationException>().WithMessage("[none provided]");
+
         }
 
         [Fact]
@@ -123,6 +127,20 @@ namespace StringlyTyped.SmallTests
 
             Func<Daves> act = () => Daves.From(null);
             act.Should().ThrowExactly<ValueObjectValidationException>();
+        }
+
+        [Fact]
+        public void nullobject()
+        {
+            // OK
+            PlayerNumber.From(5).Value.Should().Be(5);
+
+            // Invalid
+            Func<PlayerNumber> act = () => PlayerNumber.From(0);
+            act.Should().Throw<ValueObjectValidationException>();
+
+            // Null
+            (PlayerNumber.From(5) != PlayerNumber.Unassigned).Should().BeTrue();
         }
 
         [Fact]

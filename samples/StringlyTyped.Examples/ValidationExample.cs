@@ -16,24 +16,25 @@ namespace StringlyTyped.Examples
                 {
                     processor.Process(Dave.From(name));
                 }
-                catch(ValueObjectValidationException e)
+                catch (ValueObjectValidationException e)
                 {
                     Console.WriteLine(e.Message);
                 }
             }
         }
-    }
 
-    public class Dave : ValueObject<string, Dave>
-    {
-        public override string ValidationErrors() => Value.StartsWith("dave ", StringComparison.OrdinalIgnoreCase) ||
-                                                     Value.StartsWith("david ", StringComparison.OrdinalIgnoreCase)
-            ? ""
-            : $"must be a dave or david - {Value} is neither.";
-    }
+        public class Dave : ValueObject<string, Dave>
+        {
+            public override Validation Validate() =>
+                Value.StartsWith("dave ", StringComparison.OrdinalIgnoreCase) ||
+                Value.StartsWith("david ", StringComparison.OrdinalIgnoreCase)
+                    ? Validation.Ok
+                    : Validation.Invalid($"must be a dave or david - {Value} is neither.");
+        }
 
-    internal class DaveProcessor
-    {
-        internal void Process(Dave dave) => Console.WriteLine($"Processing {dave}");
+        internal class DaveProcessor
+        {
+            internal void Process(Dave dave) => Console.WriteLine($"Processing {dave}");
+        }
     }
 }
