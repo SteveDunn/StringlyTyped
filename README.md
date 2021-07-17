@@ -10,7 +10,7 @@ Primitive Obsession AKA **StringlyTyped** means being obsessed with primitives. 
 > "*Primitive Obsession is using primitive data types to represent domain ideas*" [#](https://wiki.c2.com/?PrimitiveObsession)
 
 
-# What is the package?
+# What is the repository?
 It's a very simple implementation of a **ValueObject**. ([#](https://wiki.c2.com/?ValueObject))
 
 A ValueObject is a strongly typed (*strongly, not stringly*) domain object that is immutable.
