@@ -30,6 +30,7 @@ A ValueObject is a strongly typed (strongly, not stringly) domain object that is
 Instead of `int customerId = 42;` we have `var customerId = CustomerId.From(42);`
 
 Validation is in just one place. You can't introduce bad objects into your domain, therefore you can assume that in your domain every ValueObject is valid. Handy.</Description>
+    <RepositoryType>git</RepositoryType>
 
   </PropertyGroup>
 

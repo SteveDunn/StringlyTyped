@@ -18,7 +18,7 @@ namespace StringlyTyped
         where T : notnull
         where TDerived : ValueObject<T, TDerived>
     {
-        private static readonly Func<TDerived> Factory;
+        private static readonly Func<TDerived> _factory;
 
 #pragma warning disable 8618
         public T Value { get; private set; }
@@ -46,7 +46,7 @@ namespace StringlyTyped
             NewExpression newExp = Expression.New(ctor, Array.Empty<Expression>());
             LambdaExpression lambda = Expression.Lambda(typeof(Func<TDerived>), newExp);
 
-            Factory = (Func<TDerived>) lambda.Compile();
+            _factory = (Func<TDerived>) lambda.Compile();
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace StringlyTyped
                 throw new NotSupportedException("Collections are not supported.");
             }
 
-            TDerived instance = Factory();
+            TDerived instance = _factory();
             instance.Value = value;
 
             Validation validation = ignoreValidation ? Validation.Ok : instance.Validate();

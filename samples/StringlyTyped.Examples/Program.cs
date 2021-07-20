@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace StringlyTyped.Examples
+﻿namespace StringlyTyped.Examples
 {
     class Program
     {
