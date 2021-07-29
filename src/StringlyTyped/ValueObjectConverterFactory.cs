@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
@@ -8,26 +9,33 @@ namespace StringlyTyped
 {
     public class ValueObjectConverterFactory : JsonConverterFactory
     {
+        private static readonly ConcurrentDictionary<Type, bool> _canConvertLookup = new();
+
         public override bool CanConvert(Type typeToConvert)
         {
-            Type? baseType = typeToConvert.BaseType;
-
-            if (baseType == null)
+            return _canConvertLookup.GetOrAdd(typeToConvert, CanConvertInternal);
+            
+            static bool CanConvertInternal(Type typeToConvert)
             {
-                return false;
-            }
+                Type? baseType = typeToConvert.BaseType;
 
-            if (!baseType.IsGenericType)
-            {
-                return false;
-            }
+                if (baseType == null)
+                {
+                    return false;
+                }
 
-            if (baseType.GetGenericTypeDefinition() != typeof(ValueObject<,>))
-            {
-                return false;
-            }
+                if (!baseType.IsGenericType)
+                {
+                    return false;
+                }
 
-            return true;
+                if (baseType.GetGenericTypeDefinition() != typeof(ValueObject<,>))
+                {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
         public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)

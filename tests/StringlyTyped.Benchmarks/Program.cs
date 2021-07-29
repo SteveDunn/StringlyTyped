@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Running;
+using StringlyTyped.Benchmarks.Perf;
 
 namespace StringlyTyped.Benchmarks
 {
@@ -6,7 +7,8 @@ namespace StringlyTyped.Benchmarks
     {
         public static void Main(string[] args)
         {
-            BenchmarkRunner.Run<Benchmarks>();
+            BenchmarkRunner.Run<PerfBenchmarks>();
+            //BenchmarkRunner.Run<Benchmarks>();
         }
     }
 }
