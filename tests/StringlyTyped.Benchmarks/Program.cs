@@ -7,8 +7,13 @@ namespace StringlyTyped.Benchmarks
     {
         public static void Main(string[] args)
         {
-            BenchmarkRunner.Run<PerfBenchmarks>();
-            //BenchmarkRunner.Run<Benchmarks>();
+            BenchmarkRunner.Run<PersistenceBenchmarks>();
+            BenchmarkRunner.Run<Benchmarks>();
         }
     }
+}
+
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit {}
 }
