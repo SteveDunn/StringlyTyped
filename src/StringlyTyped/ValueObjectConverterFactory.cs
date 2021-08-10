@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -8,40 +10,60 @@ namespace StringlyTyped
 {
     public class ValueObjectConverterFactory : JsonConverterFactory
     {
+        private static readonly ConcurrentDictionary<Type, bool> _canConvertLookup = new();
+        private static readonly ConcurrentDictionary<Type, Func<JsonSerializerOptions, object>> _builders = new();
+
         public override bool CanConvert(Type typeToConvert)
         {
-            Type? baseType = typeToConvert.BaseType;
-
-            if (baseType == null)
+            return _canConvertLookup.GetOrAdd(typeToConvert, CanConvertInternal);
+            
+            static bool CanConvertInternal(Type typeToConvert)
             {
-                return false;
-            }
+                Type? baseType = typeToConvert.BaseType;
 
-            if (!baseType.IsGenericType)
-            {
-                return false;
-            }
+                if (baseType == null)
+                {
+                    return false;
+                }
 
-            if (baseType.GetGenericTypeDefinition() != typeof(ValueObject<,>))
-            {
-                return false;
-            }
+                if (!baseType.IsGenericType)
+                {
+                    return false;
+                }
 
-            return true;
+                if (baseType.GetGenericTypeDefinition() != typeof(ValueObject<,>))
+                {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
-        public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+        public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+        {
+            var builder = _builders.GetOrAdd(typeToConvert, createBuilderDelegate);
+            
+            var instance = builder(options);
+
+            return (JsonConverter) instance;
+        }
+
+        private Func<JsonSerializerOptions, object> createBuilderDelegate(Type typeToConvert)
         {
             Type typeOfValueObject = typeToConvert;
             Type typeOfPrimitive = typeToConvert.BaseType!.GenericTypeArguments[0];
-            
-            Type typeOfConverterToCreate = typeof(ValueObjectConverterInner<,>).MakeGenericType(typeOfValueObject, typeOfPrimitive);
 
-            JsonConverter? converter = Activator.CreateInstance(
-                typeOfConverterToCreate,
-                new object[] { options }) as JsonConverter;
+            Type genericType = typeof(ValueObjectConverterInner<,>).MakeGenericType(typeOfValueObject, typeOfPrimitive);
 
-            return converter;
+            var ctor = genericType.GetConstructor(new[] {typeof(JsonSerializerOptions)})!;
+
+            var parameter = Expression.Parameter(typeof(JsonSerializerOptions), "options");
+            NewExpression newExp = Expression.New(ctor, parameter);
+
+            var lambda = Expression.Lambda<Func<JsonSerializerOptions, object>>(newExp, parameter);
+
+            return lambda.Compile();
         }
 
         [SuppressMessage("Microsoft.Usage", "CA1812:*", Justification = "It is instantiated by Reflection")]
@@ -80,7 +102,6 @@ namespace StringlyTyped
                 else
                 {
                     v = JsonSerializer.Deserialize<TPrimitive>(ref reader, options);
-                    //v = JsonSerializer.Deserialize<TPrimitive>(ref reader, options);
                 }
 
                 if (v == null)
