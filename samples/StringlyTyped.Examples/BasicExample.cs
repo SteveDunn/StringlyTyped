@@ -16,6 +16,8 @@ namespace StringlyTyped.Examples
 
         internal class CustomerId : ValueObject<int, CustomerId>
         {
+            //static CustomerId IValueObject<CustomerId>.Create() => new();
+
         }
 
         internal class SupplierId : ValueObject<int, SupplierId>

@@ -157,6 +157,8 @@ namespace StringlyTyped.SmallTests
         [Fact]
         public void hashing()
         {
+            var a = new Age();
+
             (Age.From(18).GetHashCode() == Age.From(18).GetHashCode()).Should().BeTrue();
             (Age.From(18).GetHashCode() == Age.From(19).GetHashCode()).Should().BeFalse();
             (Age.From(18).GetHashCode() == Score.From(1).GetHashCode()).Should().BeFalse();

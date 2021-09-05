@@ -1,8 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <nullable>enable</nullable>
+    <EnablePreviewFeatures>True</EnablePreviewFeatures>
+    <LangVersion>preview</LangVersion>
+
 
     <Features>strict</Features>
     <PackageId>StringlyTyped.ValueObjects</PackageId>
@@ -42,6 +45,7 @@ Validation is in just one place. You can't introduce bad objects into your domai
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="MinVer" Version="2.3.1" PrivateAssets="All" />
     <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <PackageReference Include="System.Runtime.Experimental" Version="6.0.0-preview.7.21377.19" />
   </ItemGroup>
 
 

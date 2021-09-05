@@ -7,6 +7,11 @@ using System.Reflection;
 
 namespace StringlyTyped
 {
+    public interface IValueObject<TSelf>
+    {
+        static abstract TSelf Create();
+    }
+
     /// <summary>
     /// Represents 'value objects'. These types are here in an attempt to stop 'Primitive Obsession' and 'Stringly Typed'
     /// (e.g. where objects are represented as primitives such as strings but where strings don't fully represent
@@ -14,40 +19,47 @@ namespace StringlyTyped
     /// </summary>
     /// <typeparam name="T">The underlying primitive type, e.g. decimal, int, string</typeparam>
     /// <typeparam name="TDerived">The derived typed (your type) - required for the 'factory' From method.</typeparam>
-    public abstract class ValueObject<T, TDerived> : IEquatable<ValueObject<T, TDerived>>, IEquatable<T>
+    public abstract class ValueObject<T, TDerived> : 
+        IEquatable<ValueObject<T, TDerived>>, IEquatable<T>, IValueObject<TDerived>
         where T : notnull
-        where TDerived : ValueObject<T, TDerived>
+        where TDerived : ValueObject<T, TDerived>,
+        new()
     {
-        private static readonly Func<TDerived> _factory;
+//        private static readonly Func<TDerived> _factory;
+        public static TDerived Create() => new TDerived();
+
+
+        // protected ValueObject() 
+        //     => throw new NotSupportedException("Do not use default constructors");
 
 #pragma warning disable 8618
         public T Value { get; private set; }
 #pragma warning restore 8618
 
-        static ValueObject()
-        {
-            var constructors = typeof(TDerived)
-                .GetTypeInfo()
-                .DeclaredConstructors.Where(c => !c.IsStatic).ToList();
-
-            if (constructors.Count == 0)
-            {
-                throw new ValueObjectSetupException($"No constructors for {typeof(TDerived).Name}");
-            }
-
-            if (constructors.Count > 1)
-            {
-                throw new ValueObjectSetupException($"Multiple constructors for {typeof(TDerived).Name}");
-            }
-
-
-            ConstructorInfo ctor = constructors.Single();
-
-            NewExpression newExp = Expression.New(ctor, Array.Empty<Expression>());
-            LambdaExpression lambda = Expression.Lambda(typeof(Func<TDerived>), newExp);
-
-            _factory = (Func<TDerived>) lambda.Compile();
-        }
+        // static ValueObject()
+        // {
+        //     var constructors = typeof(TDerived)
+        //         .GetTypeInfo()
+        //         .DeclaredConstructors.Where(c => !c.IsStatic).ToList();
+        //
+        //     if (constructors.Count == 0)
+        //     {
+        //         throw new ValueObjectSetupException($"No constructors for {typeof(TDerived).Name}");
+        //     }
+        //
+        //     if (constructors.Count > 1)
+        //     {
+        //         throw new ValueObjectSetupException($"Multiple constructors for {typeof(TDerived).Name}");
+        //     }
+        //
+        //
+        //     ConstructorInfo ctor = constructors.Single();
+        //
+        //     NewExpression newExp = Expression.New(ctor, Array.Empty<Expression>());
+        //     LambdaExpression lambda = Expression.Lambda(typeof(Func<TDerived>), newExp);
+        //
+        //     _factory = (Func<TDerived>) lambda.Compile();
+        // }
 
         /// <summary>
         /// Validates the value provided.  Return `Validation.Ok` if validation passes, or
@@ -80,8 +92,13 @@ namespace StringlyTyped
                 throw new NotSupportedException("Collections are not supported.");
             }
 
-            TDerived instance = _factory();
+            var instance = Create();
             instance.Value = value;
+
+            // TDerived instance = new()
+            // {
+            //     Value = value
+            // };// TDerived.Create(); // _factory();
 
             Validation validation = ignoreValidation ? Validation.Ok : instance.Validate();
 

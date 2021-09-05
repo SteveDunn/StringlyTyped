@@ -69,7 +69,7 @@ namespace StringlyTyped
         [SuppressMessage("Microsoft.Usage", "CA1812:*", Justification = "It is instantiated by Reflection")]
         private class ValueObjectConverterInner<TValueType, TPrimitive> : JsonConverter<TValueType>
         where TPrimitive : notnull
-            where TValueType : ValueObject<TPrimitive, TValueType>
+            where TValueType : ValueObject<TPrimitive, TValueType>, new()
         {
             private readonly JsonConverter<TValueType>? _valueConverter;
             private readonly Type _destinationType = typeof(TValueType);
