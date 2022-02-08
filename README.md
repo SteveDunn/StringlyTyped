@@ -5,6 +5,7 @@
 
 # NOTE:
 **For an alternative, more performant approach to Value Objects, please see https://github.com/SteveDunn/Vogen**
+<hr/>
 
 ### A cure for StringlyTyped software and PrimitiveObsession.
 
