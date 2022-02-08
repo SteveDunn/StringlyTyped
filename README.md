@@ -3,6 +3,9 @@
   <img src="./assets/cavey.png">
 </p>
 
+# NOTE:
+**For an alternative, more performant approach to Value Objects, please see https://github.com/SteveDunn/Vogen**
+
 ### A cure for StringlyTyped software and PrimitiveObsession.
 
 Primitive Obsession AKA **StringlyTyped** means being obsessed with primitives.  It is a Code Smell that degrades the quality of software.
